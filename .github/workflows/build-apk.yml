@@ -5,7 +5,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "Catatan-Utama-Source.zip"
+      - "Catatan-Utama-Source.tar.gz"
       - ".github/workflows/build-apk.yml"
 
 permissions:
@@ -36,7 +36,7 @@ jobs:
           gradle-version: "8.10.2"
 
       - name: Extract Android project
-        run: unzip -q Catatan-Utama-Source.zip -d source
+        run: mkdir -p source && tar -xzf Catatan-Utama-Source.tar.gz -C source
 
       - name: Build debug APK
         working-directory: source/catatan-utama
