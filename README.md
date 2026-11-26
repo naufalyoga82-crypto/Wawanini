@@ -2,25 +2,17 @@
 
 Aplikasi Android mandiri untuk menyimpan catatan lokal dan membacanya langsung dari widget layar utama yang dapat digulir.
 
-Proyek ini terpisah dari TARDIGRADE.
+## Widget
 
-## Build APK
+- Android 12 (API 31) ke atas menggunakan `RemoteViews.RemoteCollectionItems` untuk mengisi `ListView` secara langsung.
+- Android 8–11 menggunakan `RemoteViewsService` sebagai jalur kompatibilitas.
+- Isi catatan dibagi menjadi baris-baris yang dapat digulir.
+- Ketika catatan berubah, widget menerima snapshot data terbaru.
 
-GitHub Actions membangun APK debug secara otomatis saat ada push ke `main`, atau melalui menu **Actions → Build Catatan Utama APK → Run workflow**.
+## Build dan pengujian
 
-Artefak hasil build bernama `CATATAN-UTAMA-DEBUG-APK`. Unduh APK dari halaman run yang selesai dengan status sukses.
+GitHub Actions menjalankan unit test pemecah baris widget, membangun APK debug, dan memverifikasi tanda tangan APK. Widget tetap perlu diuji pada launcher fisik, khususnya Xiaomi/HyperOS.
 
-Source proyek lengkap tersedia di `Catatan-Utama-Source.zip`. Workflow mengekstrak arsip tersebut dan membangun proyek Android di dalamnya.
+## Signing
 
-## Fitur utama
-
-- Beberapa catatan disimpan secara lokal di perangkat.
-- Pilih catatan yang ditampilkan pada widget.
-- Isi panjang ditampilkan sebagai baris-baris yang bisa digulir pada widget layar utama.
-- Widget dapat diubah ukurannya.
-- Catatan bisa diimpor melalui Android Share jika aplikasi asal mendukung berbagi teks.
-- Tidak memerlukan izin internet dan tidak mengunggah isi catatan.
-
-## Batas pengujian
-
-APK masih perlu diuji langsung di perangkat dan launcher Android pengguna. Dukungan gulir widget dapat dipengaruhi launcher bawaan perangkat.
+APK debug yang dibangun di GitHub-hosted runner dapat memakai kunci debug berbeda pada run berbeda. Perbedaan sertifikat akan mencegah APK baru dipasang sebagai update di atas APK lama. Jangan menghapus aplikasi lama sebelum data catatan dicadangkan dan kompatibilitas tanda tangan diperiksa.

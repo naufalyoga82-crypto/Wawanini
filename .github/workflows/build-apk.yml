@@ -5,8 +5,8 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "Catatan-Utama-Source.tar.gz"
       - ".github/workflows/build-apk.yml"
+      - "patch/**"
 
 permissions:
   contents: read
@@ -15,7 +15,7 @@ jobs:
   build-debug-apk:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Checkout source and patch
         uses: actions/checkout@v5
 
       - name: Set up Java 17
@@ -37,17 +37,48 @@ jobs:
         with:
           gradle-version: "8.10.2"
 
-      - name: Extract Android project
+      - name: Extract base project
         run: mkdir -p source && tar -xzf Catatan-Utama-Source.tar.gz -C source
 
-      - name: Build debug APK
-        working-directory: source/catatan-utama
-        run: gradle --no-daemon --stacktrace :app:assembleDebug
+      - name: Apply widget fix
+        run: |
+          set -euo pipefail
+          PROJECT="source/catatan-utama"
+          cp patch/app/build.gradle.kts "$PROJECT/app/build.gradle.kts"
+          mkdir -p "$PROJECT/app/src/main/java/id/yoga/catatanutama/widget"
+          cp patch/app/src/main/java/id/yoga/catatanutama/widget/*.kt "$PROJECT/app/src/main/java/id/yoga/catatanutama/widget/"
+          mkdir -p "$PROJECT/app/src/test/java/id/yoga/catatanutama/widget"
+          cp patch/app/src/test/java/id/yoga/catatanutama/widget/*.kt "$PROJECT/app/src/test/java/id/yoga/catatanutama/widget/"
 
-      - name: Upload installable debug APK
+      - name: Run widget tests and build APK
+        working-directory: source/catatan-utama
+        run: gradle --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug
+
+      - name: Verify APK and record signing identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="source/catatan-utama/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          "$APKSIGNER" verify --verbose "$APK"
+          CERT_SHA="$("$APKSIGNER" verify --print-certs "$APK" | awk -F': ' '/Signer #1 certificate SHA-256 digest/ {print $2; exit}')"
+          APK_SHA="$(sha256sum "$APK" | awk '{print $1}')"
+          mkdir -p "$RUNNER_TEMP/catatan-utama"
+          cp "$APK" "$RUNNER_TEMP/catatan-utama/Catatan-Utama.apk"
+          cat > "$RUNNER_TEMP/catatan-utama/build-info.txt" <<EOF
+          Application ID: id.yoga.catatanutama
+          Version: 1.0.1
+          Version code: 2
+          APK SHA-256: $APK_SHA
+          Signing certificate SHA-256: $CERT_SHA
+          Git commit: $GITHUB_SHA
+          EOF
+
+      - name: Upload APK and verification metadata
         uses: actions/upload-artifact@v4
         with:
           name: CATATAN-UTAMA-DEBUG-APK
-          path: source/catatan-utama/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ runner.temp }}/catatan-utama/*
           if-no-files-found: error
           retention-days: 30
