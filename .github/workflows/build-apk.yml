@@ -40,17 +40,22 @@ jobs:
       - name: Extract base project
         run: mkdir -p source && tar -xzf Catatan-Utama-Source.tar.gz -C source
 
-      - name: Apply widget fix
+      - name: Apply compatibility-first widget
         run: |
           set -euo pipefail
           PROJECT="source/catatan-utama"
           cp patch/app/build.gradle.kts "$PROJECT/app/build.gradle.kts"
+          cp patch/app/src/main/AndroidManifest.xml "$PROJECT/app/src/main/AndroidManifest.xml"
           mkdir -p "$PROJECT/app/src/main/java/id/yoga/catatanutama/widget"
           cp patch/app/src/main/java/id/yoga/catatanutama/widget/*.kt "$PROJECT/app/src/main/java/id/yoga/catatanutama/widget/"
+          mkdir -p "$PROJECT/app/src/main/res/layout" "$PROJECT/app/src/main/res/xml" "$PROJECT/app/src/main/res/values"
+          cp patch/app/src/main/res/layout/widget_note_paged.xml "$PROJECT/app/src/main/res/layout/"
+          cp patch/app/src/main/res/xml/note_widget_info.xml "$PROJECT/app/src/main/res/xml/"
+          cp patch/app/src/main/res/values/strings.xml "$PROJECT/app/src/main/res/values/"
           mkdir -p "$PROJECT/app/src/test/java/id/yoga/catatanutama/widget"
           cp patch/app/src/test/java/id/yoga/catatanutama/widget/*.kt "$PROJECT/app/src/test/java/id/yoga/catatanutama/widget/"
 
-      - name: Run widget tests and build APK
+      - name: Run pager tests and build APK
         working-directory: source/catatan-utama
         run: gradle --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug
 
@@ -65,20 +70,21 @@ jobs:
           CERT_SHA="$("$APKSIGNER" verify --print-certs "$APK" | awk -F': ' '/Signer #1 certificate SHA-256 digest/ {print $2; exit}')"
           APK_SHA="$(sha256sum "$APK" | awk '{print $1}')"
           mkdir -p "$RUNNER_TEMP/catatan-utama"
-          cp "$APK" "$RUNNER_TEMP/catatan-utama/Catatan-Utama.apk"
+          cp "$APK" "$RUNNER_TEMP/catatan-utama/Catatan-Utama-Stabil.apk"
           cat > "$RUNNER_TEMP/catatan-utama/build-info.txt" <<EOF
-          Application ID: id.yoga.catatanutama.fix
-          Version: 1.0.1
+          Application ID: id.yoga.catatanutama.stable
+          Version: 1.0.2
           Version code: 1
           APK SHA-256: $APK_SHA
           Signing certificate SHA-256: $CERT_SHA
           Git commit: $GITHUB_SHA
+          Widget: TextView-only paged RemoteViews; no collection adapter
           EOF
 
       - name: Upload APK and verification metadata
         uses: actions/upload-artifact@v4
         with:
-          name: CATATAN-UTAMA-DEBUG-APK
+          name: CATATAN-UTAMA-STABIL-APK
           path: ${{ runner.temp }}/catatan-utama/*
           if-no-files-found: error
           retention-days: 30
