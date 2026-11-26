@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Catatan Utama Perbaikan</string>
+    <string name="widget_description">Widget catatan yang bisa digulir langsung di layar utama.</string>
+</resources>

@@ -67,9 +67,9 @@ jobs:
           mkdir -p "$RUNNER_TEMP/catatan-utama"
           cp "$APK" "$RUNNER_TEMP/catatan-utama/Catatan-Utama.apk"
           cat > "$RUNNER_TEMP/catatan-utama/build-info.txt" <<EOF
-          Application ID: id.yoga.catatanutama
+          Application ID: id.yoga.catatanutama.fix
           Version: 1.0.1
-          Version code: 2
+          Version code: 1
           APK SHA-256: $APK_SHA
           Signing certificate SHA-256: $CERT_SHA
           Git commit: $GITHUB_SHA

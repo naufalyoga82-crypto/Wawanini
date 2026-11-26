@@ -1,18 +1,26 @@
-# Catatan Utama
+# Catatan Utama Perbaikan
 
-Aplikasi Android mandiri untuk menyimpan catatan lokal dan membacanya langsung dari widget layar utama yang dapat digulir.
+Ini adalah build pemulihan widget untuk Android 12 ke atas. Aplikasi dipasang berdampingan dengan Catatan Utama lama agar data catatan lama tidak terhapus oleh perbedaan tanda tangan APK.
+
+## Memindahkan catatan dari aplikasi lama
+
+1. Jangan hapus aplikasi Catatan Utama lama.
+2. Buka setiap catatan lama, tekan lama pada isi catatan, pilih **Pilih semua**, lalu **Bagikan**.
+3. Pilih **Catatan Utama Perbaikan** pada menu berbagi Android.
+4. Ulangi untuk catatan lain yang ingin dipindahkan.
+5. Pastikan semua isi catatan sudah masuk dan widget versi baru dapat dibaca sebelum menghapus aplikasi lama.
 
 ## Widget
 
 - Android 12 (API 31) ke atas menggunakan `RemoteViews.RemoteCollectionItems` untuk mengisi `ListView` secara langsung.
-- Android 8–11 menggunakan `RemoteViewsService` sebagai jalur kompatibilitas.
-- Isi catatan dibagi menjadi baris-baris yang dapat digulir.
-- Ketika catatan berubah, widget menerima snapshot data terbaru.
+- Android 8–11 menggunakan `RemoteViewsService` sebagai fallback.
+- Teks panjang dibagi menjadi baris yang dapat digulir.
+- Perubahan catatan mengirim snapshot data terbaru ke widget.
 
-## Build dan pengujian
+## Verifikasi
 
-GitHub Actions menjalankan unit test pemecah baris widget, membangun APK debug, dan memverifikasi tanda tangan APK. Widget tetap perlu diuji pada launcher fisik, khususnya Xiaomi/HyperOS.
+GitHub Actions menjalankan unit test pemecah baris, build APK, dan verifikasi tanda tangan. Widget tetap perlu diuji di launcher Xiaomi/HyperOS pada perangkat pengguna.
 
-## Signing
+## Catatan pembaruan
 
-APK debug yang dibangun di GitHub-hosted runner dapat memakai kunci debug berbeda pada run berbeda. Perbedaan sertifikat akan mencegah APK baru dipasang sebagai update di atas APK lama. Jangan menghapus aplikasi lama sebelum data catatan dicadangkan dan kompatibilitas tanda tangan diperiksa.
+Build ini memiliki application ID `id.yoga.catatanutama.fix`, berbeda dari aplikasi lama `id.yoga.catatanutama`. Jangan menghapus aplikasi lama sebelum migrasi catatan selesai.
